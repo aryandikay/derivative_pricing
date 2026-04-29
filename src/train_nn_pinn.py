@@ -63,9 +63,6 @@ def bs_pde_residual(model, collocation_points, scaler, device='cpu'):
     m = x_orig[:, 0]      # moneyness S/K
     T = x_orig[:, 1]      # time to maturity
     sigma = x_orig[:, 2]  # volatility
-    r = x_orig[:, 1]      # risk-free rate (using T index by mistake - FIX THIS)
-    
-    # Actually get r correctly
     r = x_orig[:, 3]      # risk-free rate
     
     # Evaluate model to get price
