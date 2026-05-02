@@ -1,0 +1,6 @@
+{
+  "tau_conservative": 0.09631046271357402,
+  "tau_balanced": 0.001,
+  "tau_aggressive": 0.5011872336272722,
+  "recommended_tau": 0.09631046271357402
+}

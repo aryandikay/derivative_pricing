@@ -1,0 +1,8 @@
+{
+  "step": 10,
+  "routing_threshold": 0.09631,
+  "test_set_size": 15000,
+  "routed_nn_fraction": 0.32413333333333333,
+  "routed_bs_fraction": 0.6758666666666666,
+  "validation_status": "CAUTION"
+}

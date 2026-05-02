@@ -1,0 +1,11 @@
+{
+  "feature_dim": 8,
+  "n_inducing": 500,
+  "kernel": "Matern52_ARD",
+  "training_size": 5000,
+  "best_epoch": 30,
+  "best_val_nll": -2.0998692512512207,
+  "training_seed": 42,
+  "device_used": "cpu",
+  "training_time_minutes": 1.7128977576891582
+}

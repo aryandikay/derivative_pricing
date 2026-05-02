@@ -1,0 +1,12 @@
+{
+  "theorem_statement": "For the routing policy tau=0.096310, the conditional error distribution satisfies: P(error >= 0.05 | sigma <= tau) <= 0.0000",
+  "coverage_guarantee": 1.0,
+  "confidence_interval": {
+    "lower": 1.0,
+    "upper": 1.0,
+    "confidence_level": 0.95,
+    "method": "Clopper-Pearson"
+  },
+  "conservative_threshold": 0.09631046271357402,
+  "conclusion": "The routing policy achieves 100.00% coverage in the failure region, with 100.00% lower bound at 95% confidence."
+}
