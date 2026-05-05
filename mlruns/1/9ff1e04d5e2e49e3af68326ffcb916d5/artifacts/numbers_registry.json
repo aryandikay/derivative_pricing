@@ -1,0 +1,347 @@
+{
+  "nn_overall_mape": {
+    "value": "231.218318265549",
+    "source": "step7_partA",
+    "unit": "%"
+  },
+  "nn_atm_mape": {
+    "value": "103.0890133618338",
+    "source": "step7_partA",
+    "unit": "%"
+  },
+  "nn_otm_mape": {
+    "value": "551.2033889653665",
+    "source": "step7_partA",
+    "unit": "%"
+  },
+  "nn_deep_otm_mape": {
+    "value": "830.5970170423684",
+    "source": "step7_partA",
+    "unit": "%"
+  },
+  "nn_latency_ms": {
+    "value": "0.07528479004395194",
+    "source": "step7_partA",
+    "unit": "ms"
+  },
+  "nn_ts_latency_ms": {
+    "value": "0.053384919819654895",
+    "source": "step7_partA",
+    "unit": "ms"
+  },
+  "nn_delta_mae": {
+    "value": "0.5607705950334446",
+    "source": "step7_partA",
+    "unit": "abs"
+  },
+  "nn_gamma_mae": {
+    "value": "2.0794719044734653",
+    "source": "step7_partA",
+    "unit": "abs"
+  },
+  "nn_max_error": {
+    "value": "36629.55406088437",
+    "source": "step7_partA",
+    "unit": "%"
+  },
+  "nn_p99_error": {
+    "value": "4564.039409156134",
+    "source": "step7_partA",
+    "unit": "%"
+  },
+  "nn_negative_price_pct": {
+    "value": "29.446666666666665",
+    "source": "step7_partA",
+    "unit": "%"
+  },
+  "throughput_k_samples_s": {
+    "value": "1998.6009668090578",
+    "source": "step7_partA",
+    "unit": "k samples/s"
+  },
+  "error_smoothness": {
+    "value": "-76705.95693007568",
+    "source": "step7_partB",
+    "unit": "float"
+  },
+  "critical_failure_fraction": {
+    "value": "99.984",
+    "source": "step7_partB",
+    "unit": "%"
+  },
+  "gp_cov_50": {
+    "value": "94.33333333333334",
+    "source": "step8_partD",
+    "unit": "%"
+  },
+  "gp_cov_gap_50": {
+    "value": "44.333333333333336",
+    "source": "step8_partD",
+    "unit": "%"
+  },
+  "gp_cov_68": {
+    "value": "97.98",
+    "source": "step8_partD",
+    "unit": "%"
+  },
+  "gp_cov_gap_68": {
+    "value": "29.979999999999997",
+    "source": "step8_partD",
+    "unit": "%"
+  },
+  "gp_cov_80": {
+    "value": "99.44",
+    "source": "step8_partD",
+    "unit": "%"
+  },
+  "gp_cov_gap_80": {
+    "value": "19.43999999999999",
+    "source": "step8_partD",
+    "unit": "%"
+  },
+  "gp_cov_90": {
+    "value": "99.94",
+    "source": "step8_partD",
+    "unit": "%"
+  },
+  "gp_cov_gap_90": {
+    "value": "9.939999999999994",
+    "source": "step8_partD",
+    "unit": "%"
+  },
+  "gp_cov_95": {
+    "value": "99.99333333333334",
+    "source": "step8_partD",
+    "unit": "%"
+  },
+  "gp_cov_gap_95": {
+    "value": "4.9933333333333385",
+    "source": "step8_partD",
+    "unit": "%"
+  },
+  "gp_cov_99": {
+    "value": "100.0",
+    "source": "step8_partD",
+    "unit": "%"
+  },
+  "gp_cov_gap_99": {
+    "value": "1.0000000000000009",
+    "source": "step8_partD",
+    "unit": "%"
+  },
+  "gp_95ci_coverage": {
+    "value": "99.99333333333334",
+    "source": "step8_partD",
+    "unit": "%"
+  },
+  "gp_ece": {
+    "value": "0.04993000000000004",
+    "source": "step8_partD",
+    "unit": "float"
+  },
+  "gp_nll_test": {
+    "value": "-2.092043081896418",
+    "source": "step8_partD",
+    "unit": "float"
+  },
+  "gp_sharpness": {
+    "value": "0.056415993720293045",
+    "source": "step8_partD",
+    "unit": "float"
+  },
+  "spearman_corr": {
+    "value": "0.21618351223557478",
+    "source": "step8_partE",
+    "unit": "float"
+  },
+  "spearman_pval": {
+    "value": "0.0",
+    "source": "step8_partE",
+    "unit": "float"
+  },
+  "pearson_corr": {
+    "value": "0.05168905359582434",
+    "source": "step8_partE",
+    "unit": "float"
+  },
+  "kendall_corr": {
+    "value": "0.14463623259093997",
+    "source": "step8_partE",
+    "unit": "float"
+  },
+  "grid1_alignment": {
+    "value": "0.6546119683971418",
+    "source": "step8_partF",
+    "unit": "float"
+  },
+  "grid2_alignment": {
+    "value": "-0.0750261878647711",
+    "source": "step8_partF",
+    "unit": "float"
+  },
+  "grid3_alignment": {
+    "value": "0.5656215038754165",
+    "source": "step8_partF",
+    "unit": "float"
+  },
+  "primary_alpha": {
+    "value": "0.05",
+    "source": "step9_theorem",
+    "unit": "float"
+  },
+  "primary_tau": {
+    "value": "9.324477195739746",
+    "source": "step9_partB",
+    "unit": "float"
+  },
+  "theorem_verified": {
+    "value": "1.0",
+    "source": "step9_partB",
+    "unit": "bool"
+  },
+  "epsilon_alpha_05": {
+    "value": "1.0011819619791245",
+    "source": "step9_partB",
+    "unit": "%"
+  },
+  "router_nn_fraction": {
+    "value": "95.17333333333333",
+    "source": "step9_partD",
+    "unit": "%"
+  },
+  "router_overall_mape": {
+    "value": "69.25415369675515",
+    "source": "step9_partD",
+    "unit": "%"
+  },
+  "router_max_error": {
+    "value": "99.99999796833012",
+    "source": "step9_partD",
+    "unit": "%"
+  },
+  "conservative_tau": {
+    "value": "0.09617248711152965",
+    "source": "step9_partD",
+    "unit": "float"
+  },
+  "conservative_nn_pct": {
+    "value": "0.0",
+    "source": "step9_partD",
+    "unit": "%"
+  },
+  "gfc_2008_nn_mape": {
+    "value": "2477.823384483602",
+    "source": "step10_partC",
+    "unit": "%"
+  },
+  "gfc_2008_router_mape": {
+    "value": "1.5844702594580676e-05",
+    "source": "step10_partC",
+    "unit": "%"
+  },
+  "gfc_2008_router_nn_pct": {
+    "value": "0.0",
+    "source": "step10_partC",
+    "unit": "%"
+  },
+  "gfc_2008_mape_reduction": {
+    "value": "99.99999936053948",
+    "source": "step10_partC",
+    "unit": "%"
+  },
+  "gfc_2008_gp_mean_unc": {
+    "value": "3.337918281555176",
+    "source": "step10_partC",
+    "unit": "float"
+  },
+  "covid_2020_nn_mape": {
+    "value": "29313.594286711454",
+    "source": "step10_partC",
+    "unit": "%"
+  },
+  "covid_2020_router_mape": {
+    "value": "0.00014295110341783107",
+    "source": "step10_partC",
+    "unit": "%"
+  },
+  "covid_2020_router_nn_pct": {
+    "value": "0.0",
+    "source": "step10_partC",
+    "unit": "%"
+  },
+  "covid_2020_mape_reduction": {
+    "value": "99.99999951233853",
+    "source": "step10_partC",
+    "unit": "%"
+  },
+  "covid_2020_gp_mean_unc": {
+    "value": "6.9901251792907715",
+    "source": "step10_partC",
+    "unit": "float"
+  },
+  "zirp_nn_mape": {
+    "value": "103.18298486701114",
+    "source": "step10_partC",
+    "unit": "%"
+  },
+  "zirp_router_mape": {
+    "value": "0.0",
+    "source": "step10_partC",
+    "unit": "%"
+  },
+  "zirp_router_nn_pct": {
+    "value": "0.0",
+    "source": "step10_partC",
+    "unit": "%"
+  },
+  "zirp_mape_reduction": {
+    "value": "100.0",
+    "source": "step10_partC",
+    "unit": "%"
+  },
+  "zirp_gp_mean_unc": {
+    "value": "5.171781063079834",
+    "source": "step10_partC",
+    "unit": "float"
+  },
+  "vol_spike_nn_mape": {
+    "value": "101.5446349195393",
+    "source": "step10_partC",
+    "unit": "%"
+  },
+  "vol_spike_router_mape": {
+    "value": "0.0",
+    "source": "step10_partC",
+    "unit": "%"
+  },
+  "vol_spike_router_nn_pct": {
+    "value": "0.0",
+    "source": "step10_partC",
+    "unit": "%"
+  },
+  "vol_spike_mape_reduction": {
+    "value": "100.0",
+    "source": "step10_partC",
+    "unit": "%"
+  },
+  "vol_spike_gp_mean_unc": {
+    "value": "3.3600101470947266",
+    "source": "step10_partC",
+    "unit": "float"
+  },
+  "worst_stress_nn_mape": {
+    "value": "29313.594286711454",
+    "source": "step10_derived",
+    "unit": "%"
+  },
+  "best_stress_router_mape": {
+    "value": "0.0",
+    "source": "step10_derived",
+    "unit": "%"
+  },
+  "avg_stress_mape_reduction": {
+    "value": "99.9999997182195",
+    "source": "step10_derived",
+    "unit": "%"
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "name": "vol_spike",
+  "description": "Synthetic extreme volatility spike beyond the training boundary.",
+  "financial_context": "Controlled OOD robustness test for sigma only.",
+  "ood_features": "sigma 0.85-2.00 entirely beyond training max",
+  "expected_nn_behaviour": "Systematic errors increasing with sigma distance",
+  "expected_gp_uncertainty": "High and monotonic with sigma distance",
+  "n_samples": 10000
+}

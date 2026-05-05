@@ -1,0 +1,65 @@
+{
+  "silent_failure_examples": 5,
+  "table_rows": [
+    {
+      "Scenario": "Normal (in-dist.)",
+      "NN MAPE": "487.22%",
+      "NN Max Error": "65966.5%",
+      "NN >5% Errors": "100.0%",
+      "GP Mean Unc": "6.4254",
+      "GP Above Tau": "100.0%",
+      "Router MAPE": "0.00%",
+      "Router Max": "0.0%",
+      "Router ->NN%": "0.0%",
+      "MAPE Reduction": "100.0%"
+    },
+    {
+      "Scenario": "GFC 2008",
+      "NN MAPE": "2477.82%",
+      "NN Max Error": "2136442.1%",
+      "NN >5% Errors": "100.0%",
+      "GP Mean Unc": "3.3379",
+      "GP Above Tau": "100.0%",
+      "Router MAPE": "0.00%",
+      "Router Max": "0.0%",
+      "Router ->NN%": "0.0%",
+      "MAPE Reduction": "100.0%"
+    },
+    {
+      "Scenario": "COVID-19 2020",
+      "NN MAPE": "29313.59%",
+      "NN Max Error": "6310503.7%",
+      "NN >5% Errors": "100.0%",
+      "GP Mean Unc": "6.9901",
+      "GP Above Tau": "100.0%",
+      "Router MAPE": "0.00%",
+      "Router Max": "0.0%",
+      "Router ->NN%": "0.0%",
+      "MAPE Reduction": "100.0%"
+    },
+    {
+      "Scenario": "ZIRP 2015-19",
+      "NN MAPE": "103.18%",
+      "NN Max Error": "11501.2%",
+      "NN >5% Errors": "100.0%",
+      "GP Mean Unc": "5.1718",
+      "GP Above Tau": "100.0%",
+      "Router MAPE": "0.00%",
+      "Router Max": "0.0%",
+      "Router ->NN%": "0.0%",
+      "MAPE Reduction": "100.0%"
+    },
+    {
+      "Scenario": "Vol Spike (OOD)",
+      "NN MAPE": "101.54%",
+      "NN Max Error": "1205.6%",
+      "NN >5% Errors": "100.0%",
+      "GP Mean Unc": "3.3600",
+      "GP Above Tau": "100.0%",
+      "Router MAPE": "0.00%",
+      "Router Max": "0.0%",
+      "Router ->NN%": "0.0%",
+      "MAPE Reduction": "100.0%"
+    }
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "name": "normal",
+  "description": "In-distribution baseline - same sampling distribution as training data.",
+  "financial_context": "Normal market conditions, VIX ~15-20",
+  "ood_features": "None - in-distribution",
+  "expected_nn_behaviour": "Accurate, low error",
+  "expected_gp_uncertainty": "Low - well within training region",
+  "n_samples": 10000
+}

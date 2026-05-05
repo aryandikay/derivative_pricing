@@ -1,0 +1,9 @@
+{
+  "name": "gfc_2008",
+  "description": "Global Financial Crisis 2008 with extreme volatility and deep OTM protection demand.",
+  "financial_context": "Lehman collapse, systemic crisis, VIX 40-89",
+  "ood_features": "sigma 0.60-1.20, moneyness 0.50-0.80, short maturities",
+  "expected_nn_behaviour": "Large errors - high vol beyond training boundary",
+  "expected_gp_uncertainty": "Very high - sigma OOD and deep OTM undersampled",
+  "n_samples": 10000
+}

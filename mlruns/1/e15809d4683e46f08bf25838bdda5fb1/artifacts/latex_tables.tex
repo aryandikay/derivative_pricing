@@ -1,0 +1,61 @@
+\begin{table}[h]
+\centering
+\caption{Ablation study results.}
+\begin{tabular}{lccccc}
+\hline
+Configuration & Loss & Greeks & PINN & MAPE (\%) & Smoothness \\hline
+Baseline & MSE & $\times$ & $\times$ & 191450.08 & 2.11e+08 \Full (Ours) & +PDE & $\checkmark$ & $\checkmark$ & \textbf{219.28} & \textbf{87.86} \ReLU variant & +PDE & $\checkmark$ & $\checkmark$ & 2020.77 & 20006.57 \\hline
+\end{tabular}
+\end{table}
+
+\begin{table}[h]
+\centering
+\caption{Neural network surrogate evaluation.}
+\begin{tabular}{lcc}
+\hline
+Metric & Value & Target \\hline
+Overall MAPE (\%) & 231.218% & $<0.5$ \Latency (ms, TorchScript) & 0.053ms & $<1$ \\Delta MAE & 0.5608 & $<0.005$ \\hline
+\end{tabular}
+\end{table}
+
+\begin{table}[h]
+\centering
+\caption{GP calibration summary.}
+\begin{tabular}{lcc}
+\hline
+Metric & Value & Notes \\hline
+95\% empirical coverage & 99.993% & overconservative \ECE & 0.0499 & lower is better \NLL & -2.0920 & test set \\hline
+\end{tabular}
+\end{table}
+
+\begin{table}[h]
+\centering
+\caption{Empirical verification of Theorem 1.}
+\begin{tabular}{ccccccc}
+\hline
+$\alpha$ & $\tau_{\alpha}$ & NN\% & $\varepsilon_{\alpha}$ & Exceedance & Bound & Status \\
+\hline
+0.01 & 28.87181 & 69.3\% & 32.74\% & 0.99\% & 1.00\% & $\checkmark$ \\
+0.02 & 18.50377 & 69.3\% & 1.41\% & 1.97\% & 2.00\% & $\checkmark$ \\
+0.05 & 9.32448 & 69.3\% & 1.00\% & 4.76\% & 5.00\% & $\checkmark$ \\
+0.10 & 5.84435 & 69.3\% & 1.00\% & 9.02\% & 10.00\% & $\checkmark$ \\
+0.20 & 1.77446 & 69.3\% & 1.00\% & 15.96\% & 20.00\% & $\checkmark$ \\
+\hline
+\end{tabular}
+\end{table}
+
+\begin{table}[h]
+\centering
+\caption{Stress test evaluation across five scenarios.}
+\begin{tabular}{lrrrrr}
+\hline
+Scenario & NN MAPE & GP Unc. & Router MAPE & NN\% & Reduction \\
+\hline
+Normal & 487.22 & 6.4254 & 0.00 & 0.0 & 100.0\% \\
+GFC 2008 & 2477.82 & 3.3379 & 0.00 & 0.0 & 100.0\% \\
+COVID-19 2020 & 29313.59 & 6.9901 & 0.00 & 0.0 & 100.0\% \\
+ZIRP & 103.18 & 5.1718 & 0.00 & 0.0 & 100.0\% \\
+Vol spike & 101.54 & 3.3600 & 0.00 & 0.0 & 100.0\% \\
+\hline
+\end{tabular}
+\end{table}

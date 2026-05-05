@@ -1,0 +1,9 @@
+{
+  "name": "covid_2020",
+  "description": "COVID-19 market crash with rapid global regime shift.",
+  "financial_context": "Pandemic panic, VIX 60-82, emergency rate cuts",
+  "ood_features": "sigma 0.55-1.50, near-zero r, very short maturities",
+  "expected_nn_behaviour": "Severe errors - hardest OOD scenario",
+  "expected_gp_uncertainty": "Extremely high - strongest stress case",
+  "n_samples": 10000
+}

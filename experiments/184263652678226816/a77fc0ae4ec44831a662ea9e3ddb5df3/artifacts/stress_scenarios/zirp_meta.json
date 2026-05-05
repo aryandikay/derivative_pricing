@@ -1,0 +1,9 @@
+{
+  "name": "zirp",
+  "description": "Zero Interest Rate Policy era with near-zero and negative rates.",
+  "financial_context": "Post-GFC ZIRP, low vol, r near 0% globally",
+  "ood_features": "negative rates for 40% of points",
+  "expected_nn_behaviour": "Moderate errors - negative r is OOD",
+  "expected_gp_uncertainty": "Medium-high on negative-r points",
+  "n_samples": 10000
+}
