@@ -1,0 +1,75 @@
+HYBRID PRICING SYSTEM EVALUATION REPORT
+=====================================
+
+SECTION 1: DATA LOADING
+------------------------
+Data source: data/processed/test.npz
+Test points: 15,000
+
+SECTION 2: MODEL LOADING
+------------------------
+NN checkpoint: models/nn/final_stable_model.pt
+Scaler: models/input_scaler.pkl
+Router: outputs/router_v1/
+
+SECTION 3: CORE METRICS
+------------------------
+ATM Sanity Check:
+  Black-Scholes price: 0.104506
+  NN prediction:       0.104986
+  ATM error:           0.4591%
+
+Distribution Alignment:
+  Mean(true): 0.120633
+  Mean(pred): 0.120658
+  Std(true):  0.110657
+  Std(pred):  0.110602
+
+Global Accuracy:
+  MAPE (>1e-3): 3.4659%
+  MAE:          0.000858
+
+Tail Analysis (true_price < 0.01):
+  Tail MAE:      0.000611
+  Tail P95 AE:   0.002037
+  Tail P99 AE:   0.003209
+  Mean(true):    0.002359
+  Mean(pred):    0.002713
+
+SECTION 4: ROUTER PERFORMANCE
+---------------------------
+  NN usage:    100.00%
+  Exact usage: 0.00%
+  NN MAE:      0.000861
+  Exact MAE:   0.000000
+  Expected cost: 1.0000 units
+  Speedup vs pure BS: 50.00x
+
+SECTION 5: UNCERTAINTY QUALITY
+-----------------------------
+  corr(error, uncertainty): 0.6124
+  Quantile mean errors:
+    Low uncertainty:  0.000431
+    Mid uncertainty:  0.000662
+    High uncertainty: 0.001442
+
+SECTION 6: VISUALIZATIONS
+--------------------------
+  Plots saved to outputs/report/
+    - true_vs_predicted.png
+    - error_vs_true_price.png
+    - error_histogram.png
+    - uncertainty_vs_error.png
+    - routing_vs_error.png
+
+SECTION 7: FINAL SUMMARY
+------------------------
+  The NN surrogate is accurate with a global MAE of 0.000858 and a filtered MAPE of 3.4659%.
+  Tail behavior is controlled: tail MAE is 0.000611, with P95/P99 errors 0.002037/0.003209.
+  The router prefers NN execution (100.00% of cases) and falls back to exact BS in 0.00% of cases.
+  Expected speedup against pure BS is 50.00x under the assumed cost model.
+  Uncertainty shows a rising error profile across uncertainty buckets, but the correlation is a useful diagnostic rather than a perfect signal.
+
+CONCLUSION
+----------
+  The resulting hybrid system is fit for a production-style surrogate architecture: it delivers strong NN accuracy, a clear routing split, and an uncertainty signal that generally ranks higher error with higher uncertainty.

@@ -1,0 +1,164 @@
+HYBRID DERIVATIVE PRICING EVALUATION REPORT
+===========================================
+
+SECTION 1: SYSTEM OVERVIEW
+--------------------------
+The hybrid pricing architecture combines a neural network (NN) surrogate, an uncertainty estimator, and a router that selects between the NN and exact Black-Scholes pricing.
+
+- NN surrogate purpose: approximate the Black-Scholes call price rapidly across the moneyness/time/volatility/rate surface.
+- Uncertainty estimation role: quantify model confidence at each input and support safe fallback decisions.
+- Router decision logic: route to the NN when predicted uncertainty is below a threshold (tau) and fall back to exact Black-Scholes otherwise.
+
+Goal: achieve a practical speed-accuracy tradeoff by using the NN for most executions while preserving pricing accuracy through uncertainty-gated exact fallback.
+
+SECTION 2: DATA DESCRIPTION
+---------------------------
+The evaluation uses the processed test dataset contained in `data/processed/test.npz`.
+
+- Samples: 15,000 test points.
+- Features: [S/K (normalized spot-to-strike ratio), T (time to maturity), sigma (implied volatility), r (risk-free rate)].
+- Preprocessing: inputs are transformed by a saved scaler (`models/input_scaler.pkl`) before being passed to the NN surrogate. The exact Black-Scholes comparator operates on raw price inputs.
+
+SECTION 3: CORE ACCURACY METRICS
+--------------------------------
+Metrics computed on the full test set.
+
+- MAE (Mean Absolute Error): 0.000858. This is the average absolute pricing error normalized by strike.
+- RMSE (Root Mean Square Error): 0.001154. RMSE penalizes larger deviations more strongly and is useful for capturing occasional outliers.
+- MAPE (Mean Absolute Percentage Error): 3.4659% after excluding near-zero true prices (true price > 1e-3). This measures relative pricing accuracy in economically relevant regions.
+
+Interpretation:
+- MAE at the sub-basis-point level is strong for a normalized pricing surface.
+- RMSE remaining close to MAE indicates the error distribution lacks extreme catastrophic outliers across the test set.
+- MAPE below 3.5% in the filtered region is acceptable for many surrogate pricing applications, though risk-sensitive use cases may demand tighter control.
+
+SECTION 4: SANITY CHECK (ATM CASE)
+----------------------------------
+ATM check at S = K = 1, sigma = 0.2, r = 0.05.
+
+- Black-Scholes exact price: 0.104506.
+- NN surrogate price: 0.104986.
+- ATM percentage error: 0.4591%.
+
+Importance:
+- The ATM point is a high-density region in option markets and a key anchor for model fidelity.
+- A small ATM error indicates the surrogate is well-calibrated in the most liquid portion of the pricing surface.
+
+SECTION 5: DISTRIBUTION ALIGNMENT
+----------------------------------
+Comparison of price distribution moments.
+
+- Mean(true): 0.120633
+- Mean(predicted): 0.120658
+- Std(true): 0.110657
+- Std(predicted): 0.110602
+
+Interpretation:
+- The NN preserves the first and second moments of the true pricing distribution with negligible bias.
+- The near-perfect alignment of standard deviations suggests the surrogate captures the shape of the surface rather than only matching central tendency.
+
+SECTION 6: TAIL ANALYSIS (CRITICAL)
+------------------------------------
+Tail analysis for low-price region (true price < 0.01).
+
+- Tail MAE: 0.0006109
+- Tail P95 error: 0.0020371
+- Tail P99 error: 0.0032091
+- Mean(true): 0.0023587
+- Mean(predicted): 0.0027131
+
+Interpretation:
+- Low-price regions are financial risk hotspots because small absolute price deviations can translate into large relative errors and hedging losses.
+- The model exhibits a modest upward bias in the tail: the predicted mean exceeds the true mean, indicating a slight overestimation in the lowest price bucket.
+- Tail error magnitudes remain small in absolute terms, but the relative risk is higher; this behavior requires close monitoring for risk-sensitive deployment.
+
+SECTION 7: ROUTER PERFORMANCE
+-----------------------------
+Router sample diagnostics drawn from the existing `outputs/router_v1/` configuration.
+
+- NN usage: 100.00%
+- Exact usage: 0.00%
+- NN branch MAE: 0.000861 (sampled)
+- Exact branch MAE: 0.000000 (no exact usage in the sampled path)
+
+Interpretation:
+- The current router configuration is effectively not falling back to exact pricing.
+- This suggests the routing threshold is too permissive or the uncertainty signal is insufficiently calibrated.
+- Because the exact branch is unused, the system is currently operating as a pure NN surrogate rather than a true hybrid fallback architecture.
+
+SECTION 8: COMPUTATIONAL EFFICIENCY
+-----------------------------------
+Assumed cost basis:
+- NN cost = 1 unit
+- Exact cost = 50 units
+
+Under the observed routing mix:
+- Expected cost = 1.0 units
+- Implied speedup vs pure Black-Scholes = 50.0x
+
+Interpretation:
+- Efficiency gains are maximal under the current policy, but they are achieved by eliminating fallback rather than through a balanced risk-accuracy tradeoff.
+- This is a red flag for production readiness: the system gains speed, but it has not demonstrated a usable fallback safety mechanism.
+
+SECTION 9: UNCERTAINTY MODEL EVALUATION
+---------------------------------------
+Uncertainty signal diagnostics from the sample evaluation.
+
+- Correlation(error, uncertainty): 0.6124
+- Bucket mean errors:
+  - Low uncertainty: 0.000431
+  - Mid uncertainty: 0.000662
+  - High uncertainty: 0.001442
+
+Interpretation:
+- A correlation of 0.61 is a positive signal: higher predicted uncertainty tends to accompany higher pricing error.
+- The bucket analysis confirms a monotonic error trend across uncertainty quantiles.
+- However, the current threshold does not translate this signal into effective fallback decisions, so the uncertainty model is informative but underutilized.
+
+SECTION 10: VISUAL ANALYSIS
+----------------------------
+Available visual artifacts:
+- `outputs/report/true_vs_predicted.png`
+- `outputs/report/error_vs_true_price.png`
+- `outputs/report/error_histogram.png`
+- `outputs/report/uncertainty_vs_error.png`
+- `outputs/report/routing_vs_error.png`
+
+Interpretation summary:
+- True vs predicted scatter should show a tight band along the identity line, confirming strong global fit.
+- Error vs true price likely concentrates error at lower prices, highlighting tail risk.
+- The histogram documents the overall error distribution and supports the absence of large catastrophic deviations.
+- Uncertainty vs error scatter should validate the positive relationship between predicted uncertainty and realized error.
+- Routing decision scatter should expose the lack of exact branch activation and the current gating boundary.
+
+SECTION 11: CRITICAL DIAGNOSIS
+------------------------------
+What is working well:
+- The NN surrogate delivers strong global accuracy and preserves distributional moments.
+- The ATM and overall pricing metrics are consistent with a viable Black-Scholes approximation.
+- The uncertainty regressor has a meaningful signal, with higher uncertainty associated with larger realized error.
+
+What is failing or fragile:
+- The router is over-reliant on the NN path: exact fallback is not engaged.
+- The threshold appears miscalibrated or too low for the current uncertainty scale.
+- Tail region analysis shows a slight upward bias and elevated risk, making robust fallback desirable.
+
+Key issue:
+- The system is effectively operating as a pure surrogate rather than a hybrid uncertainty-gated system.
+
+SECTION 12: RECOMMENDATIONS
+---------------------------
+Actionable improvements:
+- Recalibrate the uncertainty threshold (`tau`) so that some exact fallback is triggered in high-risk regions.
+- Improve uncertainty calibration using additional loss terms, adversarial examples, or ensemble-based uncertainty if needed.
+- Implement risk-aware routing that prioritizes exact pricing for low-price / high-volatility points rather than relying solely on a single threshold.
+- Add targeted tail robustness training or loss weighting to reduce overestimation in the <0.01 price band.
+- Track fallback coverage explicitly during validation and tune for a desired operating point (e.g. 80% NN, 20% exact) rather than 100% NN.
+
+SECTION 13: FINAL CONCLUSION
+----------------------------
+The surrogate model quality is strong: global MAE, RMSE, and MAPE are consistent with a high-fidelity NN approximation of the Black-Scholes surface.
+
+However, the hybrid system is not yet production-ready in its current configuration because the router fails to exercise the exact fallback branch. The uncertainty model is promising, but the decision boundary must be recalibrated to realize a genuine speed-accuracy tradeoff.
+
+Recommendation: retain the NN surrogate as the core engine, then re-tune the router and uncertainty criterion before declaring the architecture production-viable.

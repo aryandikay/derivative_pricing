@@ -1,0 +1,23 @@
+artifact_path: file:C:/Users/Aryan/Desktop/Python/derivative pricing/phase_1/experiments/469161804854407176/models/m-fd59123e2c0d4fd4b70c3f95aff8e0bb/artifacts
+flavors:
+  python_function:
+    config:
+      device: null
+    data: data
+    env:
+      conda: conda.yaml
+      virtualenv: python_env.yaml
+    loader_module: mlflow.pytorch
+    pickle_module_name: mlflow.pytorch.pickle_module
+    python_version: 3.12.10
+  pytorch:
+    code: null
+    model_data: data
+    pytorch_version: 2.11.0+cpu
+mlflow_version: 3.11.1
+model_id: m-fd59123e2c0d4fd4b70c3f95aff8e0bb
+model_size_bytes: 213761
+model_uuid: m-fd59123e2c0d4fd4b70c3f95aff8e0bb
+prompts: null
+run_id: 0994a462fc9c4b86ae4589332506a35d
+utc_time_created: '2026-05-06 06:19:16.337948'

@@ -126,55 +126,12 @@ class PricingSurrogate(nn.Module):
 # LOSS FUNCTIONS
 # ============================================================================
 
-def relative_mse(pred: torch.Tensor, target: torch.Tensor, 
-                 epsilon: float = 1e-2) -> torch.Tensor:
-    """
-    Relative Mean Squared Error with robust epsilon.
-    
-    Useful for outputs with different scales (price, delta, gamma).
-    Normalized by target magnitude to make loss scale-independent.
-    
-    Parameters
-    ----------
-    pred : torch.Tensor
-        Predicted values
-    target : torch.Tensor
-        Target values
-    epsilon : float
-        Small constant to avoid division by zero (default 1e-2 for stability)
-    
-    Returns
-    -------
-    torch.Tensor
-        Relative MSE loss (scalar)
-    """
-    return torch.mean(((pred - target) / (torch.abs(target) + epsilon))**2)
+def stable_loss(pred: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
+    price_loss = torch.mean((pred[:, 0] - target[:, 0]) ** 2)
+    delta_loss = torch.mean((pred[:, 1] - target[:, 1]) ** 2)
+    gamma_loss = torch.mean((pred[:, 2] - target[:, 2]) ** 2)
 
-
-def combined_loss(pred: torch.Tensor, target: torch.Tensor, 
-                  lambdas: tuple = (1.0, 0.5, 0.1)) -> torch.Tensor:
-    """
-    Combined loss: weighted sum of relative MSE for each output.
-    
-    Parameters
-    ----------
-    pred : torch.Tensor
-        Predicted values, shape (batch_size, 3)
-    target : torch.Tensor
-        Target values, shape (batch_size, 3)
-    lambdas : tuple
-        Weights for (price, delta, gamma) losses
-    
-    Returns
-    -------
-    torch.Tensor
-        Combined loss (scalar)
-    """
-    l_price = relative_mse(pred[:, 0], target[:, 0])
-    l_delta = relative_mse(pred[:, 1], target[:, 1])
-    l_gamma = relative_mse(pred[:, 2], target[:, 2])
-    
-    return lambdas[0] * l_price + lambdas[1] * l_delta + lambdas[2] * l_gamma
+    return price_loss + 0.5 * delta_loss + 0.01 * gamma_loss
 
 
 # ============================================================================
@@ -202,7 +159,7 @@ class NNTrainer:
         
         # Detect device
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-        print(f"\n✓ Using device: {self.device}")
+        print(f"\nUsing device: {self.device}")
     
     def load_data(self) -> tuple:
         """
@@ -388,7 +345,7 @@ class NNTrainer:
                     
                     # Forward pass
                     pred = model(X_batch)
-                    loss = combined_loss(pred, y_batch, lambdas=lambdas)
+                    loss = stable_loss(pred, y_batch)
                     
                     # Backward pass
                     loss.backward()
@@ -403,8 +360,7 @@ class NNTrainer:
                 model.eval()
                 with torch.no_grad():
                     val_pred = model(X_val_tensor)
-                    val_loss = combined_loss(val_pred, y_val_tensor, 
-                                            lambdas=lambdas)
+                    val_loss = stable_loss(val_pred, y_val_tensor)
                 
                 val_loss_item = val_loss.item()
                 val_losses.append(val_loss_item)
@@ -437,29 +393,26 @@ class NNTrainer:
             model.eval()
             with torch.no_grad():
                 train_pred = model(X_train_tensor)
-                train_eval_loss = combined_loss(train_pred, y_train_tensor, 
-                                               lambdas=lambdas)
+                train_eval_loss = stable_loss(train_pred, y_train_tensor)
                 
                 val_pred = model(X_val_tensor)
-                val_eval_loss = combined_loss(val_pred, y_val_tensor, 
-                                             lambdas=lambdas)
+                val_eval_loss = stable_loss(val_pred, y_val_tensor)
                 
                 test_pred = model(X_test_tensor)
-                test_eval_loss = combined_loss(test_pred, y_test_tensor, 
-                                              lambdas=lambdas)
+                test_eval_loss = stable_loss(test_pred, y_test_tensor)
                 
-                # Per-output losses
-                l_train_price = relative_mse(train_pred[:, 0], y_train_tensor[:, 0])
-                l_train_delta = relative_mse(train_pred[:, 1], y_train_tensor[:, 1])
-                l_train_gamma = relative_mse(train_pred[:, 2], y_train_tensor[:, 2])
-                
-                l_val_price = relative_mse(val_pred[:, 0], y_val_tensor[:, 0])
-                l_val_delta = relative_mse(val_pred[:, 1], y_val_tensor[:, 1])
-                l_val_gamma = relative_mse(val_pred[:, 2], y_val_tensor[:, 2])
-                
-                l_test_price = relative_mse(test_pred[:, 0], y_test_tensor[:, 0])
-                l_test_delta = relative_mse(test_pred[:, 1], y_test_tensor[:, 1])
-                l_test_gamma = relative_mse(test_pred[:, 2], y_test_tensor[:, 2])
+                # Per-output MSE losses
+                l_train_price = torch.mean((train_pred[:, 0] - y_train_tensor[:, 0]) ** 2)
+                l_train_delta = torch.mean((train_pred[:, 1] - y_train_tensor[:, 1]) ** 2)
+                l_train_gamma = torch.mean((train_pred[:, 2] - y_train_tensor[:, 2]) ** 2)
+
+                l_val_price = torch.mean((val_pred[:, 0] - y_val_tensor[:, 0]) ** 2)
+                l_val_delta = torch.mean((val_pred[:, 1] - y_val_tensor[:, 1]) ** 2)
+                l_val_gamma = torch.mean((val_pred[:, 2] - y_val_tensor[:, 2]) ** 2)
+
+                l_test_price = torch.mean((test_pred[:, 0] - y_test_tensor[:, 0]) ** 2)
+                l_test_delta = torch.mean((test_pred[:, 1] - y_test_tensor[:, 1]) ** 2)
+                l_test_gamma = torch.mean((test_pred[:, 2] - y_test_tensor[:, 2]) ** 2)
             
             print(f"\nFinal Losses:")
             print(f"  Train: {train_eval_loss.item():.6f}")
@@ -495,11 +448,11 @@ class NNTrainer:
             
             model_path = self.model_dir / f"{model_name}.pt"
             torch.save(model.state_dict(), model_path)
-            print(f"✓ Saved model: {model_path}")
+            print(f"Saved model: {model_path}")
             
             # Log model as artifact
             mlflow.pytorch.log_model(model, artifact_path="pytorch_model")
-            print(f"✓ Logged PyTorch model to MLflow")
+            print(f"Logged PyTorch model to MLflow")
             
             # Save training history
             history = {
@@ -511,10 +464,16 @@ class NNTrainer:
             history_path = self.model_dir / f"{model_name}_history.pt"
             torch.save(history, history_path)
             mlflow.log_artifact(str(history_path), artifact_path="models")
-            print(f"✓ Saved training history: {history_path}")
+            print(f"Saved training history: {history_path}")
+            
+            # Save final model to stable checkpoint
+            final_model_path = Path("models/nn/final_stable_model.pt")
+            final_model_path.parent.mkdir(parents=True, exist_ok=True)
+            torch.save(model.state_dict(), final_model_path)
+            print(f"Saved final model to models/nn/final_stable_model.pt")
             
             print(f"\n" + "="*70)
-            print(f"✓ TRAINING COMPLETE")
+            print(f"TRAINING COMPLETE")
             print("="*70)
             print(f"\nModel saved to: {model_path}")
             print(f"MLflow run: {run_name}")

@@ -75,7 +75,12 @@ class PricingSurrogate(nn.Module):
         self.net = nn.Sequential(*layers)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        return self.net(x)
+        out = self.net(x)
+        # Apply output constraints: sigmoid for price and delta, ReLU for gamma
+        out[:, 0] = torch.sigmoid(out[:, 0])  # price in [0, 1]
+        out[:, 1] = torch.sigmoid(out[:, 1])  # delta in [0, 1]
+        out[:, 2] = torch.relu(out[:, 2])     # gamma in [0, inf)
+        return out
 
 
 def paper_print(section: str, message: str = "") -> None:

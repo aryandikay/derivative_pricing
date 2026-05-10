@@ -1,0 +1,10 @@
+artifact_location: file:C:/Users/Aryan/Desktop/Python/derivative pricing/phase_1/experiments/469161804854407176/models/m-fd59123e2c0d4fd4b70c3f95aff8e0bb/artifacts
+creation_timestamp: 1778048356188
+experiment_id: '469161804854407176'
+last_updated_timestamp: 1778048363862
+model_id: m-fd59123e2c0d4fd4b70c3f95aff8e0bb
+model_type: null
+name: pytorch_model
+source_run_id: 0994a462fc9c4b86ae4589332506a35d
+status: 2
+status_message: null

@@ -293,15 +293,17 @@ def verify_coverage_guarantee(tau, alpha, nn_model, gp_model, likelihood, X_test
 
 class UncertaintyRouter:
     """Uncertainty-Gated Surrogate Router for European Option Pricing."""
-    def __init__(self, nn_model, gp_model, likelihood, scaler, device, alpha=0.05, tau=None, validation_data=None):
+    def __init__(self, nn_model, gp_model, likelihood, scaler, unc_model, device, alpha=0.05, tau=None, validation_data=None):
         self.nn_model = nn_model
         self.gp_model = gp_model
         self.likelihood = likelihood
         self.scaler = scaler
+        self.unc_model = unc_model
         self.device = device
         self.alpha = alpha
 
         self.nn_model.eval(); self.gp_model.eval(); self.likelihood.eval()
+        assert self.unc_model is not None, 'Uncertainty model not loaded in router'
 
         if tau is not None:
             self.tau = float(tau)
@@ -335,51 +337,54 @@ class UncertaintyRouter:
         return mean, std, rel
 
     def price(self, moneyness, T, sigma, r):
+        assert hasattr(self, 'scaler'), 'Scaler not loaded in router'
         start = time.perf_counter()
         self.stats['total_queries'] += 1
-        raw = np.array([[moneyness, T, sigma, r]])
-        scaled = self.scaler.transform(raw)
-        tensor = torch.FloatTensor(scaled).to(self.device)
-        gp_mean, gp_std, rel_unc = self._compute_gp_uncertainty(tensor)
-        self.stats['uncertainty_history'].append(rel_unc)
+        x_raw = np.array([[moneyness, T, sigma, r]], dtype=np.float32)
+        x_scaled = self.scaler.transform(x_raw)
+        tensor = torch.FloatTensor(x_scaled).to(self.device)
+        uncertainty = float(self.unc_model.predict(x_scaled)[0])
+        self.stats['uncertainty_history'].append(uncertainty)
         exact_price = max(float(black_scholes_call(moneyness, T, r, sigma)), 1e-12)
         exact_delta = float(np.clip(bs_delta(moneyness, T, r, sigma), 0.0, 1.0))
         exact_gamma = max(float(bs_gamma(moneyness, T, r, sigma)), 0.0)
-        if rel_unc < self.tau:
+        if uncertainty < self.tau:
             t0 = time.perf_counter()
             route = 'nn'
+            with torch.no_grad():
+                nn_out = self.nn_model(tensor)
+                price = max(float(nn_out[0, 0].item()), 1e-12)
+                delta = float(np.clip(nn_out[0, 1].item(), 0.0, 1.0))
+                gamma = max(float(nn_out[0, 2].item()), 0.0)
             lat = (time.perf_counter()-t0)*1000
             self.stats['nn_queries'] += 1; self.stats['nn_latency_ms'] += lat
         else:
             t0 = time.perf_counter()
             route = 'exact'
+            price = exact_price
+            delta = exact_delta
+            gamma = exact_gamma
             lat = (time.perf_counter()-t0)*1000
             self.stats['exact_queries'] += 1; self.stats['exact_latency_ms'] += lat
+        if route == 'nn':
+            assert abs(price - nn_out[0,0].item()) < 1e-8, 'Router is not using NN output'
         total_lat = (time.perf_counter()-start)*1000
         self.stats['total_latency_ms'] += total_lat
         self.stats['route_history'].append(route)
-        meta = {'route': route, 'gp_mean': gp_mean, 'gp_std': gp_std, 'rel_uncertainty': rel_unc, 'threshold': self.tau, 'alpha': self.alpha, 'total_latency_ms': total_lat, 'route_latency_ms': lat}
-        return exact_price, exact_delta, exact_gamma, rel_unc, route, meta
+        meta = {'route': route, 'uncertainty': uncertainty, 'threshold': self.tau, 'alpha': self.alpha, 'total_latency_ms': total_lat, 'route_latency_ms': lat}
+        return price, delta, gamma, uncertainty, route, meta
 
     def price_batch(self, X_raw, batch_size=1000):
         N = len(X_raw)
         X_scaled = self.scaler.transform(X_raw)
-        gp_means_all, gp_stds_all = [], []
-        for i in range(0, N, batch_size):
-            batch = torch.FloatTensor(X_scaled[i:i+batch_size]).to(self.device)
-            with torch.no_grad(), gpytorch.settings.fast_pred_var():
-                pred = self.likelihood(self.gp_model(batch))
-                gp_means_all.append(pred.mean.cpu().numpy())
-                gp_stds_all.append(pred.variance.sqrt().cpu().numpy())
-        gp_means = np.concatenate(gp_means_all); gp_stds = np.concatenate(gp_stds_all)
-        rel_unc = gp_stds / (np.abs(gp_means) + 1e-8)
-        nn_mask = rel_unc < self.tau
+        uncertainties = self.unc_model.predict(X_scaled)
+        nn_mask = uncertainties < self.tau
         prices = np.maximum(black_scholes_call(X_raw[:,0], X_raw[:,1], X_raw[:,3], X_raw[:,2]), 1e-12)
         deltas = np.clip(bs_delta(X_raw[:,0], X_raw[:,1], X_raw[:,3], X_raw[:,2]), 0.0, 1.0)
         gammas = np.maximum(bs_gamma(X_raw[:,0], X_raw[:,1], X_raw[:,3], X_raw[:,2]), 0.0)
         routes = ['nn' if flag else 'exact' for flag in nn_mask]
         self.stats['total_queries'] += N; self.stats['nn_queries'] += int(nn_mask.sum()); self.stats['exact_queries'] += int((~nn_mask).sum())
-        return prices, deltas, gammas, rel_unc, routes
+        return prices, deltas, gammas, uncertainties, routes
 
     def routing_stats(self):
         total = self.stats['total_queries']
@@ -397,11 +402,9 @@ class UncertaintyRouter:
         return self.stats
 
     def get_uncertainty_only(self, moneyness, T, sigma, r):
-        raw = np.array([[moneyness, T, sigma, r]])
+        raw = np.array([[moneyness, T, sigma, r]], dtype=np.float32)
         scaled = self.scaler.transform(raw)
-        tensor = torch.FloatTensor(scaled).to(self.device)
-        _, _, rel = self._compute_gp_uncertainty(tensor)
-        return rel
+        return float(self.unc_model.predict(scaled)[0])
 
     def save(self, path='outputs/router_v1'):
         os.makedirs(path, exist_ok=True)
@@ -423,26 +426,31 @@ class UncertaintyRouter:
         if device is None: device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         with open(f'{path}/router_config.json') as f: cfg = json.load(f)
         nn = PricingSurrogate(hidden_dim=128,n_layers=4,activation='silu')
-        nn.load_state_dict(torch.load(f'{path}/nn_model.pt', map_location=device))
+        nn_state = torch.load(NN_DIR / 'final_stable_model.pt', map_location=device)
+        if isinstance(nn_state, dict) and 'model_state_dict' in nn_state:
+            nn_state = nn_state['model_state_dict']
+        nn.load_state_dict(nn_state)
         gp_cfg, inducing = _load_gp_assets(path)
         gp = DeepKernelGP(inducing, feature_dim=gp_cfg.get('feature_dim',8))
         gp.load_state_dict(torch.load(f'{path}/gp_model.pt', map_location=device))
         lik = gpytorch.likelihoods.GaussianLikelihood(); lik.load_state_dict(torch.load(f'{path}/gp_likelihood.pt', map_location=device))
-        scaler = joblib.load(f'{path}/scaler.pkl')
-        return cls(nn, gp, lik, scaler, device, alpha=cfg.get('alpha',0.05), tau=cfg.get('tau',None))
+        scaler = joblib.load(MODELS_DIR / 'input_scaler.pkl')
+        unc_model = joblib.load(MODELS_DIR / 'uncertainty_model.pkl')
+        return cls(nn, gp, lik, scaler, unc_model, device, alpha=cfg.get('alpha',0.05), tau=cfg.get('tau',0.01))
 
     @classmethod
     def from_saved_models(cls, alpha=0.05, validation_data=None):
         device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         nn_model = PricingSurrogate(hidden_dim=128,n_layers=4,activation='silu')
-        nn_model.load_state_dict(torch.load(NN_DIR / 'best_model.pt', map_location=device))
+        nn_model.load_state_dict(torch.load(NN_DIR / 'final_stable_model.pt', map_location=device))
         inducing_pts = torch.load(GP_DIR / 'inducing_points.pt', map_location=device)
         with open(GP_DIR / 'gp_config.json') as f: gp_cfg = json.load(f)
         gp_model = DeepKernelGP(inducing_pts, feature_dim=gp_cfg.get('feature_dim',8))
         gp_model.load_state_dict(torch.load(GP_DIR / 'gp_model.pt', map_location=device))
         likelihood = gpytorch.likelihoods.GaussianLikelihood(); likelihood.load_state_dict(torch.load(GP_DIR / 'gp_likelihood.pt', map_location=device))
         scaler = joblib.load(MODELS_DIR / 'input_scaler.pkl')
-        return cls(nn_model, gp_model, likelihood, scaler, device, alpha=alpha, validation_data=validation_data)
+        unc_model = joblib.load(MODELS_DIR / 'uncertainty_model.pkl')
+        return cls(nn_model, gp_model, likelihood, scaler, unc_model, device, alpha=alpha, validation_data=validation_data)
 
 # ----------------------------------------------------------------------------
 # PART D: Threshold sweep and figures
